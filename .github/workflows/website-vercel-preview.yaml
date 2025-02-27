@@ -1,0 +1,64 @@
+name: Vercel Website Preview Deployment
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/website/**"
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+
+    outputs:
+      deploymentUrl: ${{ steps.extract-deployment-url.outputs.deployment_url }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 23.3.0
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 9.8.0
+          run_install: false
+      - name: Install Vercel CLI
+        run: pnpm add --global vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee deploy-output.txt
+      - name: Extract Deployment URL
+        id: extract-deployment-url
+        run: |
+          DEPLOYMENT_URL=$(cat deploy-output.txt | grep -o "Preview: https://[^ ]*" | sed 's/Preview: //')
+          echo "deployment_url=$DEPLOYMENT_URL"
+          echo "deployment_url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+  comment-on-pr:
+    runs-on: ubuntu-24.04
+
+    needs: [deploy-preview]
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            🚀 Preview URL: [${{needs.deploy-preview.outputs.deploymentUrl}}](${{needs.deploy-preview.outputs.deploymentUrl}})

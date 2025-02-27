@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "//#setup:inner": {
+      "passThroughEnv": ["*"],
+      "cache": true
+    },
+    "setup": {
+      "dependsOn": ["//#setup:inner"],
+      "passThroughEnv": ["*"],
+      "cache": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "target/**", "build/**", ".next/**"],
+      "passThroughEnv": ["*"],
+      "cache": true
+    },
+    "dev": {
+      "passThroughEnv": ["*"],
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

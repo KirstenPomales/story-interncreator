@@ -1,0 +1,29 @@
+{
+  "name": "theintern-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "setup": "turbo run setup",
+    "setup:inner": "pnpm simple-git-hooks && pnpm run -r -F=@theintern/tunnel setup",
+    "dev": "turbo run dev --filter=@theintern/website",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "clean": "pnpm run -r clean && rm -rf node_modules .turbo",
+    "format": "biome format --write",
+    "lint": "biome lint --write",
+    "sync-op": "pnpm run -r --sequential sync-op"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm run format && pnpm run lint"
+  },
+  "packageManager": "pnpm@9.12.2",
+  "devDependencies": {
+    "@biomejs/biome": "1.8.3",
+    "simple-git-hooks": "^2.11.1",
+    "turbo": "^2.1.0",
+    "wrangler": "^3.86.0"
+  },
+  "license": "UNLICENSED"
+}
