@@ -54,9 +54,10 @@ export default function StepThree({ formData, setFormData, onNext }: StepThreePr
       setUploadStatus("Character data uploaded to IPFS. Minting NFT...");
       
       // If user provided a custom contract address, use it
+      let contractAddress = process.env.NEXT_PUBLIC_SPG_NFT_CONTRACT;
       if (customContract) {
-        // Store it temporarily for this mint operation
-        process.env.NEXT_PUBLIC_SPG_NFT_CONTRACT = customContract;
+        // Use the custom contract instead of the environment variable
+        contractAddress = customContract;
       }
       
       // Add IPFS data to formData for minting
@@ -64,7 +65,7 @@ export default function StepThree({ formData, setFormData, onNext }: StepThreePr
         ...formData,
         ipfsHash: pinataResponse.ipfsHash,
         ipfsUrl: pinataResponse.pinataUrl,
-        spgNftContract: customContract || process.env.NEXT_PUBLIC_SPG_NFT_CONTRACT
+        spgNftContract: contractAddress
       };
       
       // Mint NFT with the IPFS data
@@ -76,7 +77,7 @@ export default function StepThree({ formData, setFormData, onNext }: StepThreePr
         ipAssetId: response.ipId,
         nftTokenId: response.tokenId,
         txHash: response.txHash,
-        spgNftContract: customContract || process.env.NEXT_PUBLIC_SPG_NFT_CONTRACT,
+        spgNftContract: contractAddress,
         ipfsHash: pinataResponse.ipfsHash,
         ipfsUrl: pinataResponse.pinataUrl
       });
